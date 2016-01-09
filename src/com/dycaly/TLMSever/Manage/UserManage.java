@@ -2,6 +2,7 @@ package com.dycaly.TLMSever.Manage;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.hibernate.Query;
@@ -272,8 +273,12 @@ public class UserManage {
 		ReqAddFriendResult rafr = new ReqAddFriendResult(0);
 		List<Reqaddfriend> reqaddfriends = query.list();
 		for (Reqaddfriend reqaddfriend : reqaddfriends) {
-
-			ReqAddFriendInfo item = new ReqAddFriendInfo(false, reqaddfriend
+			Iterator<Userditals> udIterator = reqaddfriend.getUserByReqerId().getUserditalses().iterator();
+			Userditals userditals = new Userditals();
+			if (udIterator.hasNext()) {
+				userditals = udIterator.next();
+			}
+			ReqAddFriendInfo item = new ReqAddFriendInfo(false, userditals.getPicUrl(),reqaddfriend
 					.getUserByReqerId().getUsername(), new UserDitalsManage(
 					reqaddfriend.getUserByReqerId().getUserId())
 					.getUserditals().getNickname(), reqaddfriend

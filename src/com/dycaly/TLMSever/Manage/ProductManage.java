@@ -42,21 +42,20 @@ public class ProductManage {
 		session.close();
 	}
 
-	public ProductManage(Classify classify,
-			User userBySellerId, String productUrl, String productName,
-			String productIntro, Integer hightestPrice, Integer lowestPrice,
-			Integer cutprice, Integer cutTime, Integer status,
-			Timestamp sellDate) {
+	public ProductManage(Classify classify, User userBySellerId,
+			String productUrl, String productName, String productIntro,
+			Integer hightestPrice, Integer lowestPrice, Integer cutprice,
+			Integer cutTime, Integer status, Timestamp sellDate) {
 		session = HibernateSessionFactory.getSession();
 		transaction = session.beginTransaction();
-		mProduct = new Product( userBySellerId,classify,userBySellerId, 
+		mProduct = new Product(userBySellerId, classify, userBySellerId,
 				productUrl, productName, productIntro, hightestPrice,
-				lowestPrice, cutprice, cutTime,status,sellDate, hightestPrice);
+				lowestPrice, cutprice, cutTime, status, sellDate, hightestPrice);
 		session.save(mProduct);
 		transaction.commit();
-		
+
 		Timer timer = new Timer();
-		timer.schedule(new MyTask(mProduct), cutTime *1000, 1000 * cutTime);
+		timer.schedule(new MyTask(mProduct), cutTime * 1000, 1000 * cutTime);
 	}
 
 	public int buyProduct(String token) {
@@ -117,45 +116,110 @@ public class ProductManage {
 		session.save(comment);
 		transaction.commit();
 	}
-	
-	public Product getProduct(){
+
+	public Product getProduct() {
 		return mProduct;
 	}
-	public String getProductInfoJson(){
-		String result=null;
+
+	public String getProductInfoJson() {
+		String result = null;
 		Product product = mProduct;
-		UserDitalsManage udm = new UserDitalsManage(product.getUserBySellerId().getUserId());
-		ProductInfo productInfo = new ProductInfo(product.getProductId(),product.getProductUrl(), product
-				.getProductName(),udm.getUserditals().getNickname(), product.getProductIntro(), product
-				.getHightestPrice(), product.getLowestPrice(), product
-				.getCutTime(),product.getCutPrice(), product.getStatus(), product
-				.getUserBySellerId().getUsername(), product.getSellDate()
-				.toString(), product.getUserByBuyerId().getUsername(),
-				product.getLastPrice(), product.getClassify().getName());
+		UserDitalsManage udm = new UserDitalsManage(product.getUserBySellerId()
+				.getUserId());
+		ProductInfo productInfo = new ProductInfo(product.getProductId(),
+				product.getProductUrl(), product.getProductName(), udm
+						.getUserditals().getNickname(),
+				product.getProductIntro(), product.getHightestPrice(),
+				product.getLowestPrice(), product.getCutTime(),
+				product.getCutPrice(), product.getStatus(), product
+						.getUserBySellerId().getUsername(), product
+						.getSellDate().toString(), product.getUserByBuyerId()
+						.getUsername(), product.getLastPrice(), product
+						.getClassify().getName());
 		Gson gson = new Gson();
 		result = gson.toJson(productInfo);
 		return result;
 	}
-	public String getAllProduct(){
-		
+
+	public String getAllProduct() {
+
 		ProductResult pr = new ProductResult(0);
 		String hql = "from Product";
 		session = HibernateSessionFactory.getSession();
 		Query query = session.createQuery(hql);
 		List<Product> products = query.list();
-		
+
 		for (Product product : products) {
-			
-			UserDitalsManage udm = new UserDitalsManage(product.getUserBySellerId().getUserId());
-			pr.addProductInfo(new ProductInfo(product.getProductId(),product.getProductUrl(), product
-					.getProductName(),udm.getUserditals().getNickname(), product.getProductIntro(), product
-					.getHightestPrice(), product.getLowestPrice(), product
-					.getCutTime(), product.getCutPrice(),product.getStatus(), product
-					.getUserBySellerId().getUsername(), product.getSellDate()
-					.toString(), product.getUserByBuyerId().getUsername(),
-					product.getLastPrice(), product.getClassify().getName()));
+
+			UserDitalsManage udm = new UserDitalsManage(product
+					.getUserBySellerId().getUserId());
+			pr.addProductInfo(new ProductInfo(product.getProductId(), product
+					.getProductUrl(), product.getProductName(), udm
+					.getUserditals().getNickname(), product.getProductIntro(),
+					product.getHightestPrice(), product.getLowestPrice(),
+					product.getCutTime(), product.getCutPrice(), product
+							.getStatus(), product.getUserBySellerId()
+							.getUsername(), product.getSellDate().toString(),
+					product.getUserByBuyerId().getUsername(), product
+							.getLastPrice(), product.getClassify().getName()));
 		}
-		
+
+		Gson gson = new Gson();
+		return gson.toJson(pr);
+	}
+
+	public String getMySellProduct(String token) {
+		String str = null;
+		UserManage um = new UserManage(token);
+		int userid = um.getUserId();
+		ProductResult pr = new ProductResult(0);
+		String hql = "from Product p where p.userBySellerId.userId = " + userid;
+		session = HibernateSessionFactory.getSession();
+		Query query = session.createQuery(hql);
+		List<Product> products = query.list();
+		for (Product product : products) {
+
+			UserDitalsManage udm = new UserDitalsManage(product
+					.getUserBySellerId().getUserId());
+			pr.addProductInfo(new ProductInfo(product.getProductId(), product
+					.getProductUrl(), product.getProductName(), udm
+					.getUserditals().getNickname(), product.getProductIntro(),
+					product.getHightestPrice(), product.getLowestPrice(),
+					product.getCutTime(), product.getCutPrice(), product
+							.getStatus(), product.getUserBySellerId()
+							.getUsername(), product.getSellDate().toString(),
+					product.getUserByBuyerId().getUsername(), product
+							.getLastPrice(), product.getClassify().getName()));
+		}
+
+		Gson gson = new Gson();
+		return gson.toJson(pr);
+	}
+	
+	public String getMyBuyProduct(String token){
+		String str = null;
+		UserManage um = new UserManage(token);
+		int userid = um.getUserId();
+		ProductResult pr = new ProductResult(0);
+		String hql = "from Product p where p.userByBuyerId.userId = " + userid;
+		session = HibernateSessionFactory.getSession();
+		Query query = session.createQuery(hql);
+		List<Product> products = query.list();
+		for (Product product : products) {
+
+			UserDitalsManage udm = new UserDitalsManage(product
+					.getUserBySellerId().getUserId());
+			pr.addProductInfo(new ProductInfo(product.getProductId(), product
+					.getProductUrl(), product.getProductName(), udm
+					.getUserditals().getNickname(), product.getProductIntro(),
+					product.getHightestPrice(), product.getLowestPrice(),
+					product.getCutTime(), product.getCutPrice(), product
+							.getStatus(), product.getUserBySellerId()
+							.getUsername(), product.getSellDate().toString(),
+					product.getUserByBuyerId().getUsername(), product
+							.getLastPrice(), product.getClassify().getName()));
+		}
+
 		Gson gson = new Gson();
 		return gson.toJson(pr);
 	}
